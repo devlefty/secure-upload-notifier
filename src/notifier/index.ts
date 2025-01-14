@@ -1,5 +1,5 @@
 // config.js - 配置文件
-export const defaultConfig = {
+const defaultConfig: NotifierConfig = {
   // 警告框配置
   alert: {
     duration: 0, // 持续时间(ms)，0 表示一直显示
@@ -16,6 +16,18 @@ export const defaultConfig = {
       type: "ease-in-out",
     },
     resetTimeout: 2 * 60 * 1000, // 状态重置时间(ms)
+    mobile: {
+      position: {
+        top: "20px",
+        left: "10px",
+        right: "10px",
+      },
+      width: {
+        min: "300px",
+        max: "100%", // 移动端宽度建议跟随屏幕
+      },
+      padding: "12px 15px", // 移动端内边距可以适当调整
+    },
   },
 
   // UI配置
@@ -41,7 +53,17 @@ export const defaultConfig = {
   },
 
   // 上传组件选择器
-  uploadSelectors: [".el-upload", 'input[type="file"]', ".ant-upload", ".van-uploader"],
+  uploadSelectors: [
+    ".el-upload",
+    'input[type="file"]',
+    ".ant-upload",
+    ".van-uploader", // 移动端常用上传组件
+    ".weui-uploader",
+    ".am-upload",
+    ".mui-upload",
+    ".mint-upload",
+    "[data-role='mobile-upload']",
+  ],
 };
 import { NotifierConfig, DeepRequired } from "../types/index";
 class Notifier {
@@ -50,6 +72,9 @@ class Notifier {
   private alertElement: HTMLElement | null;
   private isAlertShown: boolean;
   private isClosedByUser: boolean;
+  private isMobile: boolean;
+  // 添加延迟显示的配置
+  private static readonly SHOW_DELAY = 500;
 
   // 单例模式
   public static getInstance(config?: NotifierConfig): Notifier {
@@ -61,6 +86,7 @@ class Notifier {
 
   constructor(config?: NotifierConfig) {
     this.config = this.mergeConfig(defaultConfig, config || {});
+    this.isMobile = this.checkIsMobile();
 
     this.alertElement = null;
     this.isAlertShown = false;
@@ -100,6 +126,13 @@ class Notifier {
     };
   }
 
+  private checkIsMobile(): boolean {
+    return (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.innerWidth <= 768
+    );
+  }
+
   // 创建警告弹窗
   createAlertElement() {
     const { ui, style, alert } = this.config;
@@ -129,111 +162,196 @@ class Notifier {
     return alertDiv;
   }
 
-  generateStyles() {
-    const { style, alert } = this.config;
+  private generateStyles() {
+    return [
+      this.generateBaseStyles(),
+      this.generatePositionStyles(),
+      this.generateContentStyles(),
+      this.generateTypographyStyles(),
+      this.generateCloseButtonStyles(),
+      this.generateAnimationStyles(),
+    ].join("\n");
+  }
+
+  private generateBaseStyles(): string {
+    const { style } = this.config;
 
     return `
+      .security-alert {
+        position: fixed;
+        z-index: 9999;
+        background: #fff;
+        box-shadow: ${style.boxShadow};
+        border-radius: ${style.borderRadius};
+        border-left: 4px solid ${style.colors?.primary};
+      }
+    `;
+  }
+
+  private generatePositionStyles(): string {
+    const { alert } = this.config;
+    const position = this.isMobile ? alert.mobile?.position : alert.position;
+    const width = this.isMobile ? alert.mobile?.width : alert.width;
+
+    if (this.isMobile) {
+      return `
         .security-alert {
-          position: fixed;
-          top: ${alert.position?.top};
-          right: -100%;
-          z-index: 9999;
-          background: #fff;
-          box-shadow: ${style.boxShadow};
-          border-radius: ${style.borderRadius};
-          padding: 16px 20px;
-          border-left: 4px solid ${style.colors?.primary};
-          transition: right ${alert.animation?.duration}ms ${alert.animation?.type};
-          min-width: ${alert.width?.min};
-          max-width: ${alert.width?.max};
+          top: ${position?.top};
+          bottom: ${position?.bottom};  
+          left: ${position?.left};
+          right: ${position?.right};
+          transform: translateY(-150%);
+          min-width: ${width?.min};
+          max-width: ${width?.max};
+          padding: ${alert.mobile?.padding};
+          transition: transform ${alert.animation?.duration}ms ${alert.animation?.type};
         }
-  
+
         .security-alert.show {
-          right: 20px;
+          transform: translateY(0);
         }
-  
+
         .security-alert.hide {
-          right: -100%;
-        }
-  
-        .security-alert-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-        }
-  
-        .security-alert-icon {
-          flex-shrink: 0;
-          width: 30px;
-          height: 30px;
-          color: ${style.colors?.primary};
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-  
-        .security-alert-text {
-          flex: 1;
-        }
-  
-        .security-alert-title {
-          margin: 0 0 8px 0;
-          color: ${style.colors?.primary};
-          font-size: 16px;
-          font-weight: 600;
-          line-height: 1.4;
-        }
-  
-        .security-alert-message {
-          margin: 0;
-          color: ${style.colors?.text};
-          font-size: 14px;
-          line-height: 1.6;
-        }
-  
-        .security-alert-close {
-          flex-shrink: 0;
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 20px;
-          color: ${style.colors?.close};
-          padding: 4px;
-          line-height: 1;
-          transition: color 0.2s;
-        }
-  
-        .security-alert-close:hover {
-          color: ${style.colors?.closeHover};
-        }
-  
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-          20%, 40%, 60%, 80% { transform: translateX(2px); }
-        }
-  
-        .security-alert.show {
-          animation: shake 0.8s ease-in-out;
+          transform: translateY(-150%);
         }
       `;
+    }
+
+    return `
+      .security-alert {
+        top: ${position?.top};
+        right: -100%;
+        min-width: ${width?.min};
+        max-width: ${width?.max};
+        padding: 16px 20px;
+        transition: right ${alert.animation?.duration}ms ${alert.animation?.type};
+      }
+
+      .security-alert.show {
+        right: 20px;
+      }
+
+      .security-alert.hide {
+        right: -100%;
+      }
+    `;
+  }
+  private generateContentStyles(): string {
+    const { style } = this.config;
+
+    return `
+      .security-alert-content {
+        display: flex;
+        align-items: flex-start;
+        gap: ${this.isMobile ? "8px" : "12px"};
+      }
+
+      .security-alert-icon {
+        flex-shrink: 0;
+        width: ${this.isMobile ? "24px" : "30px"};
+        height: ${this.isMobile ? "24px" : "30px"};
+        color: ${style.colors?.primary};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .security-alert-text {
+        flex: 1;
+      }
+    `;
+  }
+  private generateTypographyStyles(): string {
+    const { style } = this.config;
+
+    return `
+      .security-alert-title {
+        margin: 0 0 ${this.isMobile ? "4px" : "8px"} 0;
+        color: ${style.colors?.primary};
+        font-size: ${this.isMobile ? "14px" : "16px"};
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .security-alert-message {
+        margin: 0;
+        color: ${style.colors?.text};
+        font-size: ${this.isMobile ? "12px" : "14px"};
+        line-height: 1.6;
+      }
+    `;
+  }
+
+  private generateCloseButtonStyles(): string {
+    const { style } = this.config;
+
+    return `
+      .security-alert-close {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: ${this.isMobile ? "18px" : "20px"};
+        color: ${style.colors?.close};
+        padding: ${this.isMobile ? "2px" : "4px"};
+        line-height: 1;
+        transition: color 0.2s;
+      }
+
+      .security-alert-close:hover {
+        color: ${style.colors?.closeHover};
+      }
+    `;
+  }
+
+  private generateAnimationStyles(): string {
+    if (this.isMobile) {
+      return `
+          @keyframes mobileShake {
+              0% { transform: translateY(0); }
+              10%, 30%, 50%, 70%, 90% { transform: translateY(-2px); }
+              20%, 40%, 60%, 80%, 100% { transform: translateY(2px); }
+          }
+
+          .security-alert.show {
+              animation: mobileShake 0.5s ease-in-out;
+              animation-delay: 300ms;
+          }
+      `;
+    }
+    return `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+        20%, 40%, 60%, 80% { transform: translateX(2px); }
+      }
+
+      .security-alert.show {
+        animation: shake 0.5s ease-in-out;
+      }
+    `;
   }
 
   // 显示警告
   showAlert() {
     if (this.isAlertShown || this.isClosedByUser) return;
+    const delayTimer = setTimeout(() => {
+      if (!this.alertElement) {
+        this.alertElement = this.createAlertElement();
+        document.body.appendChild(this.alertElement);
+        this.alertElement.offsetHeight;
+      }
 
-    if (!this.alertElement) {
-      this.alertElement = this.createAlertElement();
-      document.body.appendChild(this.alertElement);
-      this.alertElement.offsetHeight;
-    }
+      requestAnimationFrame(() => {
+        this.alertElement?.classList.add("show");
+        setTimeout(() => {
+          this.alertElement?.classList.add("show");
+        }, 50); // 添加一个小延迟确保过渡效果生效
+      });
 
-    requestAnimationFrame(() => {
-      this.alertElement?.classList.add("show");
-    });
-
-    this.isAlertShown = true;
+      this.isAlertShown = true;
+      clearTimeout(delayTimer);
+    }, Notifier.SHOW_DELAY);
   }
 
   // 隐藏警告
@@ -265,14 +383,14 @@ class Notifier {
   }
 
   // 检查是否存在上传元素
-  checkForUploadElements(root = document) {
+  private checkForUploadElements(root = document) {
     return this.config.uploadSelectors.some((selector) => {
       return root.querySelector(selector) !== null;
     });
   }
 
   // 检查 iframe
-  checkIframes() {
+  private checkIframes() {
     const iframes = document.getElementsByTagName("iframe");
     Array.from(iframes).forEach((iframe) => {
       try {
@@ -300,7 +418,7 @@ class Notifier {
   }
 
   // 初始化监听
-  init() {
+  public init() {
     // 检查当前页面
     if (this.checkForUploadElements(document)) {
       this.showAlert();
@@ -336,6 +454,19 @@ class Notifier {
     iframeObserver.observe(document.body, {
       childList: true,
       subtree: true,
+    });
+
+    // 监听屏幕旋转和窗口大小变化
+    window.addEventListener("resize", () => {
+      const newIsMobile = this.checkIsMobile();
+      if (this.isMobile !== newIsMobile) {
+        this.isMobile = newIsMobile;
+        // 重新创建警告框以应用新样式
+        if (this.isAlertShown) {
+          this.hideAlert();
+          this.showAlert();
+        }
+      }
     });
   }
 }

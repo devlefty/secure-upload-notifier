@@ -1,6 +1,6 @@
 {
   "name": "@digital-rd/secure-upload-notifier",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "一个安全上传提醒的npm包，使用TypeScript和Rollup构建。",
   "main": "dist/index.js",
   "type": "module",

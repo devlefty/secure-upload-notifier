@@ -9,6 +9,7 @@
 - 自动检测页面是否有上传元素
 - 自动触发上传文件时的安全警告
 - 支持自定义安全警告的内容和样式
+- 支持移动端
 
 ## 安装
 
@@ -41,7 +42,7 @@ notifier.init(notifierConfig)
 默认配置
 
 ```javascript
-const defaultConfig = {
+const defaultConfig: NotifierConfig = {
   // 警告框配置
   alert: {
     duration: 0, // 持续时间(ms)，0 表示一直显示
@@ -58,6 +59,18 @@ const defaultConfig = {
       type: "ease-in-out",
     },
     resetTimeout: 2 * 60 * 1000, // 状态重置时间(ms)
+    mobile: {
+      position: {
+        top: "20px",
+        left: "10px",
+        right: "10px",
+      },
+      width: {
+        min: "300px",
+        max: "100%", // 移动端宽度建议跟随屏幕
+      },
+      padding: "12px 15px", // 移动端内边距可以适当调整
+    },
   },
 
   // UI配置
@@ -83,6 +96,16 @@ const defaultConfig = {
   },
 
   // 上传组件选择器
-  uploadSelectors: [".el-upload", 'input[type="file"]', ".ant-upload", ".van-uploader"],
+  uploadSelectors: [
+    ".el-upload",
+    'input[type="file"]',
+    ".ant-upload",
+    ".van-uploader", // 移动端常用上传组件
+    ".weui-uploader",
+    ".am-upload",
+    ".mui-upload",
+    ".mint-upload",
+    "[data-role='mobile-upload']",
+  ],
 };
 ```
