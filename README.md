@@ -27,7 +27,7 @@ pnpm add @digital-rd/secure-upload-notifier
 ## 使用
 
 ```typescript
-import { Notifier,  createNotifier, NotifierConfig } from 'secure-upload-notifier';
+import { Notifier,  createNotifier, NotifierConfig } from '@digital-rd/secure-upload-notifier';
 
 // 初始化通知器
 const notifier = new createNotifier();
