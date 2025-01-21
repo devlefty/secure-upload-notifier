@@ -1,6 +1,6 @@
 {
   "name": "@digital-rd/secure-upload-notifier",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "一个安全上传提醒的npm包，使用TypeScript和Rollup构建。",
   "main": "dist/index.js",
   "type": "module",
@@ -18,16 +18,15 @@
   ],
   "author": "lefty",
   "license": "MIT",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^26.0.0",
+    "ts-jest": "^26.0.0",
+    "tslib": "^2.8.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/node": "^20.0.0",
     "rollup": "^4.30.1",
     "typescript": "^4.0.0"
-  },
-  "devDependencies": {
-    "jest": "^26.0.0",
-    "ts-jest": "^26.0.0",
-    "tslib": "^2.8.1"
   }
 }

@@ -8,8 +8,8 @@ const defaultConfig: NotifierConfig = {
       right: "20px",
     },
     width: {
-      min: "400px",
-      max: "450px",
+      min: "300px",
+      max: "350px",
     },
     animation: {
       duration: 300, // 动画时间(ms)
@@ -223,7 +223,7 @@ class Notifier {
         right: -100%;
         min-width: ${width?.min};
         max-width: ${width?.max};
-        padding: 16px 20px;
+        padding: 12px 16px;
         transition: right ${alert.animation?.duration}ms ${alert.animation?.type};
       }
 
@@ -276,7 +276,7 @@ class Notifier {
       .security-alert-message {
         margin: 0;
         color: ${style.colors?.text};
-        font-size: ${this.isMobile ? "12px" : "14px"};
+        font-size: 12px;
         line-height: 1.6;
       }
     `;
